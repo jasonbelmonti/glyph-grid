@@ -147,8 +147,8 @@ Section status: Complete
 | FLOW-5 | Return-to-terminal command or timed event starts. | Live mode is active and semantic terminal content is still available. | The scene returns to normal terminal text without a visible renderer surface swap. | `REQ-1`, `REQ-3` |
 | FUNC-1 | Terminal state is active. | No transition is running. | The terminal state displays stable monospaced text, prompt, cursor, and output cells. | `REQ-1`, `REQ-3` |
 | FUNC-2 | Live state is active. | Live source texture or canvas is available. | The live state displays animated content represented by terminal glyphs on the same grid. | `REQ-1`, `REQ-4` |
-| FUNC-3 | Reveal settings are changed. | Transition controls are visible. | The transition can originate from the cursor, a command output block, or a rectangular pane. | `REQ-2`, `REQ-5` |
-| FUNC-4 | Default visual mode is selected. | Optional effects are disabled. | Optional effects remain disabled by default and can be layered after the core transition succeeds. | `REQ-3`, `REQ-5` |
+| FUNC-3 | Transition controls are changed. | Transition controls are visible. | Mix, reveal shape, glyph density, color adoption, and cell size each visibly affect the rendered output while the renderer surface remains unchanged. | `REQ-5` |
+| FUNC-4 | Default visual mode is selected. | Optional effects are disabled. | Optional effects remain disabled by default and can be layered after the core transition succeeds. | `REQ-3` |
 
 Section status: Complete
 
@@ -200,7 +200,7 @@ Section status: Complete
 | REQ-2 | FLOW-2, FLOW-3 | ACC-2 |
 | REQ-3 | FUNC-1, FUNC-2, FUNC-4 | ACC-1, ACC-2 |
 | REQ-4 | FLOW-4, FUNC-2 | ACC-3 |
-| REQ-5 | FUNC-3, FUNC-4 | ACC-2, ACC-4, ACC-6 |
+| REQ-5 | FUNC-3 | ACC-6 |
 | REQ-6 | FLOW-3, FLOW-4 | ACC-5 |
 
 Section status: Complete
@@ -304,7 +304,7 @@ Verification strategy:
 
 - `VAL-4`: Visual inspection verifies that terminal and live states share grid metrics. Related IDs: `REQ-1`, `REQ-3`, `FUNC-1`, `FUNC-2`, `ACC-1`, `ACC-2`.
 - `VAL-5`: A live procedural source verifies the renderer is not dependent on pre-rendered video. Related IDs: `REQ-4`, `FUNC-2`, `ACC-3`.
-- `VAL-6`: Transition recordings verify whether conversion reads as terminal text coming alive. Related IDs: `REQ-2`, `REQ-5`, `FUNC-3`, `FUNC-4`, `ACC-2`, `ACC-4`.
+- `VAL-6`: Transition recordings verify whether conversion reads as terminal text coming alive. Related IDs: `REQ-2`, `FUNC-4`, `ACC-2`, `ACC-4`.
 - `VAL-7`: Basic frame timing verifies whether the prototype is interactive enough for design review. Related IDs: `REQ-6`, `ACC-5`.
 - `VAL-8`: Control exercise verifies that mix, reveal shape, glyph density, color adoption, and cell size each produce the expected visible change on the shared renderer surface. Related IDs: `REQ-5`, `ACC-6`.
 
@@ -314,14 +314,14 @@ Verification strategy:
 | REQ-2 | VAL-6 |
 | REQ-3 | VAL-4 |
 | REQ-4 | VAL-5 |
-| REQ-5 | VAL-6, VAL-8 |
+| REQ-5 | VAL-8 |
 | REQ-6 | VAL-7 |
 
 | Behavior | Mechanism | Verification |
 | --- | --- | --- |
 | FUNC-1 | TECH-1, TECH-2, TECH-3 | VAL-4 |
 | FUNC-2 | TECH-1, TECH-2, TECH-4, TECH-5 | VAL-5 |
-| FUNC-3 | TECH-6, TECH-7 | VAL-6 |
+| FUNC-3 | TECH-2, TECH-5, TECH-6, TECH-7 | VAL-8 |
 | FUNC-4 | TECH-6 | VAL-6 |
 | ACC-3 | TECH-4, TECH-5 | VAL-5, VAL-7 |
 | ACC-6 | TECH-2, TECH-5, TECH-6, TECH-7 | VAL-8 |
