@@ -83,44 +83,42 @@ Section status: Complete
 
 ## 4. Constraints, Invariants, and Assumptions
 
-| ID | Type | Statement |
-| --- | --- | --- |
-| CON-1 | Constraint | The normal terminal state and live ASCII state shall use the same visible grid, font metrics, and canvas surface. |
-| CON-2 | Constraint | The default transition shall not rely on additional visual language such as heavy glow, bloom, scanline distortion, or chromatic effects. |
-| CON-3 | Constraint | The prototype shall run locally in a browser using client-side rendering. |
-| ASM-1 | Assumption | Browser WebGL is available for the prototype audience. |
-| ASM-2 | Assumption | A simulated terminal buffer is sufficient to validate the illusion before integrating a real PTY or terminal emulator. |
-| ASM-3 | Assumption | Live content can initially be a procedural canvas or WebGL scene rather than arbitrary DOM capture. |
+| ID | Type | Statement | Source or rationale | Validation or resolution plan |
+| --- | --- | --- | --- | --- |
+| CON-1 | Constraint | The normal terminal state and live ASCII state shall use the same visible grid, font metrics, and canvas surface. | Terminal continuity is the core uncertainty the prototype must test. | `VAL-4` verifies shared grid metrics during terminal and live states. |
+| CON-2 | Constraint | The default transition shall not rely on additional visual language such as heavy glow, bloom, scanline distortion, or chromatic effects. | The experiment must validate renderer continuity before optional effects can mask defects. | `VAL-6` records the default transition with optional effects disabled. |
+| CON-3 | Constraint | The prototype shall run locally in a browser using client-side rendering. | The prototype is intended for local design review without backend infrastructure. | Prototype review confirms no backend service is required to run the demo. |
+| ASM-1 | Assumption | Browser WebGL is available for the prototype audience. | The inspected reference effect depends on browser GPU rendering, and the prototype audience is expected to use modern desktop browsers. | At prototype kickoff, the frontend/rendering engineer confirms target browser support or records a fallback Canvas 2D plan. |
+| ASM-2 | Assumption | A simulated terminal buffer is sufficient to validate the illusion before integrating a real PTY or terminal emulator. | `NG-1` excludes a full terminal emulator from R0 scope. | `SM-1`, `SM-2`, and `SM-4` determine at prototype review whether simulation answered the continuity question. |
+| ASM-3 | Assumption | Live content can initially be a procedural canvas or WebGL scene rather than arbitrary DOM capture. | `ALT-3` defers DOM capture to avoid browser capture complexity before the core transition is validated. | `Q-1` selects the first live source at prototype kickoff, and `VAL-5` verifies that the selected source changes over time. |
 
 Section status: Complete
 
 ## 5. Requirements
 
-| ID | Requirement |
-| --- | --- |
-| REQ-1 | The renderer shall draw terminal text and live ASCII content through one shared glyph atlas and grid coordinate system. |
-| REQ-2 | The prototype shall support at least one transition from semantic terminal cells to sampled live-content cells. |
-| REQ-3 | The transition shall preserve terminal visual continuity by keeping cell size, font, baseline, and background treatment stable by default. |
-| REQ-4 | The prototype shall render a live source that changes over time, not a pre-rendered video-only source. |
-| REQ-5 | The prototype shall expose tunable transition parameters for mix, reveal shape, glyph density, color adoption, and cell size. |
-| REQ-6 | The prototype shall report basic frame timing or an equivalent performance signal during the demo. |
+| ID | Type | Priority | Requirement statement | Rationale | Verification |
+| --- | --- | --- | --- | --- | --- |
+| REQ-1 | Functional | Must | The renderer shall draw terminal text and live ASCII content through one shared glyph atlas and grid coordinate system. | A shared renderer surface is required to test whether terminal and live cells can occupy one visual system. | `VAL-4` |
+| REQ-2 | Functional | Must | The prototype shall support at least one transition from semantic terminal cells to sampled live-content cells. | The experiment cannot answer the terminal-comes-alive question without an observable ownership transition. | `VAL-6` |
+| REQ-3 | Functional | Must | The transition shall preserve terminal visual continuity by keeping cell size, font, baseline, and background treatment stable by default. | The core illusion depends on continuity rather than a visible renderer swap. | `VAL-4`, `VAL-6` |
+| REQ-4 | Functional | Must | The prototype shall render a live source that changes over time instead of using pre-rendered video as the only source. | The target product behavior requires live content, not only replayed media. | `VAL-5` |
+| REQ-5 | Functional | Must | The prototype shall expose tunable transition parameters for mix, reveal shape, glyph density, color adoption, and cell size. | Tunable controls are required to evaluate which mechanisms affect continuity and legibility. | `VAL-8` |
+| REQ-6 | Operability | Should | The prototype shall report frame timing during terminal, transition, and live states during the demo. | Reviewers need a visible performance signal to distinguish visual failure from frame-time failure. | `VAL-7` |
 
 Section status: Complete
 
 ## 6. Success Measures and Kill Criteria
 
-Success measures:
-
-- `SM-1`: During review, the normal state is recognized as a straightforward terminal before transition begins.
-- `SM-2`: During review, the transition is perceived as terminal content becoming live rather than a hard switch to a separate animation.
-- `SM-3`: The prototype maintains interactive preview performance on target hardware, with no sustained frame stalls visible during the transition.
-- `SM-4`: Reviewers can identify which mechanisms are necessary for continuity and which effects are optional enhancements.
-
-Kill criteria:
-
-- `KC-1`: The transition only works when heavy visual effects hide the renderer change.
-- `KC-2`: The live content cannot be read as intentional at practical terminal cell densities.
-- `KC-3`: Maintaining a real terminal illusion requires production-terminal features before the core visual question can be answered.
+| Measure | Baseline | Target or decision threshold | Evaluation date or decision event | Related IDs |
+| --- | --- | --- | --- | --- |
+| `SM-1`: Terminal recognition | Current concept is a written description with 0 working prototype frames. | Continue if both required reviewers identify the pre-transition viewport as a conventional terminal before being told the effect goal. | Prototype review | `OBJ-1`, `REQ-1`, `REQ-3` |
+| `SM-2`: Transition continuity | Current concept has 0 observed terminal-to-live transitions. | Continue if both required reviewers describe the default transition as terminal content becoming live rather than a hard switch; pivot if either reviewer identifies a renderer surface swap. | Prototype review | `OBJ-1`, `REQ-2`, `REQ-3` |
+| `SM-3`: Live-state legibility | Current concept has 0 live-source samples at terminal cell density. | Continue if both required reviewers identify the live source as intentional animated content at one practical terminal density; stop if every tested density reads as noise. | Prototype review | `OBJ-2`, `REQ-4`, `REQ-5` |
+| `SM-4`: Preview performance | Current concept has no frame timing signal. | Continue if frame timing is visible or logged for terminal, transition, and live states with no recorded transition interval above 100 ms for more than 1 consecutive second; pivot if the threshold is missed. | Prototype review | `REQ-6` |
+| `SM-5`: Mechanism isolation | Current concept does not identify which mechanisms are necessary. | Continue if both required reviewers can name at least one control that materially affects continuity; pivot if only decorative effects make the transition acceptable. | Prototype review | `OBJ-3`, `REQ-5` |
+| `KC-1`: Effect masking kill criterion | Optional effects are not required in the current concept. | Stop if the transition only works when heavy visual effects hide the renderer change. | Prototype review | `OBJ-1`, `REQ-3` |
+| `KC-2`: Legibility kill criterion | Current concept has no measured legibility at terminal density. | Stop if the live content cannot be read as intentional at practical terminal cell densities. | Prototype review | `OBJ-2`, `REQ-4` |
+| `KC-3`: Integration-cost kill criterion | Full terminal emulator integration is out of R0 scope. | Stop if maintaining the illusion requires production-terminal features before the core visual question can be answered. | Prototype review | `OBJ-3`, `NG-1` |
 
 Section status: Complete
 
@@ -140,20 +138,17 @@ Section status: Complete
 
 ## 8. Operational Scenarios and Functional Behavior
 
-| ID | Scenario |
-| --- | --- |
-| FLOW-1 | A user sees a normal terminal prompt and simulated command output. |
-| FLOW-2 | The user triggers a command or timed event such as `render ./scene`. |
-| FLOW-3 | The output region begins a per-cell transition from semantic terminal cells to live sampled ASCII cells. |
-| FLOW-4 | The live source animates while still appearing to occupy the original terminal grid. |
-| FLOW-5 | The scene returns to normal terminal text without a visible renderer surface swap. |
-
-| ID | Externally visible behavior |
-| --- | --- |
-| FUNC-1 | The terminal state displays stable monospaced text, prompt, cursor, and output cells. |
-| FUNC-2 | The live state displays animated content represented by terminal glyphs on the same grid. |
-| FUNC-3 | The transition can originate from the cursor, a command output block, or a rectangular pane. |
-| FUNC-4 | Optional effects remain disabled by default and can be layered after the core transition succeeds. |
+| ID | Trigger | Preconditions | Behavior or outcome | Related requirements |
+| --- | --- | --- | --- | --- |
+| FLOW-1 | Prototype loads. | Local browser can run the prototype. | A user sees a normal terminal prompt and simulated command output. | `REQ-1`, `REQ-3` |
+| FLOW-2 | User command or timed event starts, such as `render ./scene`. | Terminal state is visible and a live source is available. | The output region begins a per-cell transition from semantic terminal cells to live sampled ASCII cells. | `REQ-2`, `REQ-3` |
+| FLOW-3 | Transition progress advances. | The output region is transitioning to live ownership. | Cells convert according to the transition map while grid metrics and renderer surface remain stable. | `REQ-1`, `REQ-2`, `REQ-3` |
+| FLOW-4 | Live mode is active. | The transition to live ownership has completed. | The live source animates while still appearing to occupy the original terminal grid. | `REQ-1`, `REQ-4` |
+| FLOW-5 | Return-to-terminal command or timed event starts. | Live mode is active and semantic terminal content is still available. | The scene returns to normal terminal text without a visible renderer surface swap. | `REQ-1`, `REQ-3` |
+| FUNC-1 | Terminal state is active. | No transition is running. | The terminal state displays stable monospaced text, prompt, cursor, and output cells. | `REQ-1`, `REQ-3` |
+| FUNC-2 | Live state is active. | Live source texture or canvas is available. | The live state displays animated content represented by terminal glyphs on the same grid. | `REQ-1`, `REQ-4` |
+| FUNC-3 | Reveal settings are changed. | Transition controls are visible. | The transition can originate from the cursor, a command output block, or a rectangular pane. | `REQ-2`, `REQ-5` |
+| FUNC-4 | Default visual mode is selected. | Optional effects are disabled. | Optional effects remain disabled by default and can be layered after the core transition succeeds. | `REQ-3`, `REQ-5` |
 
 Section status: Complete
 
