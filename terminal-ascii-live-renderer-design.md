@@ -193,6 +193,7 @@ Service levels:
 | ACC-3 | Given live mode is active, when the source animation changes, then the displayed glyphs update without using a pre-rendered MP4 as the only source. |
 | ACC-4 | Given return-to-terminal is triggered, when the transition completes, then semantic terminal text is restored on the same renderer surface. |
 | ACC-5 | Given the prototype is running, when terminal, transition, or live states are active, then a frame-timing signal is visible or logged for review. |
+| ACC-6 | Given the prototype controls are visible, when mix, reveal shape, glyph density, color adoption, and cell size are each changed, then the rendered output visibly changes in the corresponding dimension without switching renderer surfaces. |
 
 Section status: Complete
 
@@ -204,7 +205,7 @@ Section status: Complete
 | REQ-2 | FLOW-2, FLOW-3 | ACC-2 |
 | REQ-3 | FUNC-1, FUNC-2, FUNC-4 | ACC-1, ACC-2 |
 | REQ-4 | FLOW-4, FUNC-2 | ACC-3 |
-| REQ-5 | FUNC-3 | ACC-2, ACC-4 |
+| REQ-5 | FUNC-3, FUNC-4 | ACC-2, ACC-4, ACC-6 |
 | REQ-6 | FLOW-3, FLOW-4 | ACC-5 |
 
 Section status: Complete
@@ -281,7 +282,7 @@ Control logic:
 Non-functional controls:
 
 - Performance visibility: display or log approximate frame timing.
-- Visual continuity control: expose toggles for transition mode, reveal origin, and live source.
+- Visual continuity control: expose controls for mix, reveal shape, glyph density, color adoption, cell size, transition mode, reveal origin, and live source.
 - Degradation control: if the live source fails, remain in terminal mode and show a local error indicator outside the terminal illusion.
 
 Section status: Complete
@@ -310,6 +311,7 @@ Verification strategy:
 - `VAL-5`: A live procedural source verifies the renderer is not dependent on pre-rendered video. Related IDs: `REQ-4`, `FUNC-2`, `ACC-3`.
 - `VAL-6`: Transition recordings verify whether conversion reads as terminal text coming alive. Related IDs: `REQ-2`, `REQ-5`, `FUNC-3`, `FUNC-4`, `ACC-2`, `ACC-4`.
 - `VAL-7`: Basic frame timing verifies whether the prototype is interactive enough for design review. Related IDs: `REQ-6`, `ACC-5`.
+- `VAL-8`: Control exercise verifies that mix, reveal shape, glyph density, color adoption, and cell size each produce the expected visible change on the shared renderer surface. Related IDs: `REQ-5`, `ACC-6`.
 
 | Requirement | Verification |
 | --- | --- |
@@ -317,7 +319,7 @@ Verification strategy:
 | REQ-2 | VAL-6 |
 | REQ-3 | VAL-4 |
 | REQ-4 | VAL-5 |
-| REQ-5 | VAL-6 |
+| REQ-5 | VAL-6, VAL-8 |
 | REQ-6 | VAL-7 |
 
 | Behavior | Mechanism | Verification |
@@ -327,6 +329,7 @@ Verification strategy:
 | FUNC-3 | TECH-6, TECH-7 | VAL-6 |
 | FUNC-4 | TECH-6 | VAL-6 |
 | ACC-3 | TECH-4, TECH-5 | VAL-5, VAL-7 |
+| ACC-6 | TECH-2, TECH-5, TECH-6, TECH-7 | VAL-8 |
 
 Section status: Complete
 
@@ -345,7 +348,8 @@ Risks:
 | RISK-1 | Renderer switch is perceptible. | Use one rendering surface and shared glyph atlas from the first prototype. |
 | RISK-2 | Live content loses semantic clarity at terminal density. | Test multiple glyph sets, contrast mappings, and source compositions. |
 | RISK-3 | Real terminal requirements constrain animation. | Prototype with a simulated buffer first, then evaluate terminal integration separately. |
-| RISK-4 | Performance is insufficient. | Keep source simple, measure frame timing, and move expensive operations into GPU passes where needed. |
+| RISK-4 | Live source texture fails or is unavailable. | Remain in terminal mode and show a local error indicator outside the terminal illusion. |
+| RISK-7 | Performance is insufficient. | Keep source simple, measure frame timing, and move expensive operations into GPU passes where needed. |
 
 Open questions:
 
