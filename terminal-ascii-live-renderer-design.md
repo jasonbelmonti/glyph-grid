@@ -101,8 +101,8 @@ Section status: Complete
 | REQ-1 | Functional | Must | The renderer shall draw terminal text and live ASCII content through one shared glyph atlas and grid coordinate system. | A shared renderer surface is required to test whether terminal and live cells can occupy one visual system. | `VAL-4` |
 | REQ-2 | Functional | Must | The prototype shall support at least one transition from semantic terminal cells to sampled live-content cells. | The experiment cannot answer the terminal-comes-alive question without an observable ownership transition. | `VAL-6` |
 | REQ-3 | Functional | Must | The transition shall preserve terminal visual continuity by keeping cell size, font, baseline, and background treatment stable by default. | The core illusion depends on continuity rather than a visible renderer swap. | `VAL-4`, `VAL-6` |
-| REQ-4 | Functional | Must | The prototype shall render a live source that changes over time instead of using pre-rendered video as the only source. | The target product behavior requires live content, not only replayed media. | `VAL-5` |
-| REQ-5 | Functional | Must | The prototype shall expose tunable transition parameters for mix, reveal shape, glyph density, color adoption, cell size, transition mode, reveal origin, and live source. | Tunable controls are required to evaluate which mechanisms affect continuity and legibility. | `VAL-8` |
+| REQ-4 | Functional | Must | The prototype shall render a live source that changes over time instead of using pre-rendered video as the only source. | The target product behavior requires live content, not only replayed media. | `VAL-5`, `VAL-9` |
+| REQ-5 | Functional | Must | The prototype shall expose tunable transition parameters for mix, reveal shape, glyph density, color adoption, cell size, transition mode, reveal origin, and live source. | Tunable controls are required to evaluate which mechanisms affect continuity and legibility. | `VAL-8`, `VAL-9` |
 | REQ-6 | Operability | Should | The prototype shall report frame timing during terminal, transition, and live states during the demo. | Reviewers need a visible performance signal to distinguish visual failure from frame-time failure. | `VAL-7` |
 
 Section status: Complete
@@ -113,11 +113,11 @@ Section status: Complete
 | --- | --- | --- | --- | --- |
 | `SM-1`: Terminal recognition | Current concept is a written description with 0 working prototype frames. | Continue if both required reviewers identify the pre-transition viewport as a conventional terminal before being told the effect goal. | Prototype review | `OBJ-1`, `REQ-1`, `REQ-3` |
 | `SM-2`: Transition continuity | Current concept has 0 observed terminal-to-live transitions. | Continue if both required reviewers describe the default transition as terminal content becoming live rather than a hard switch; pivot if either reviewer identifies a renderer surface swap. | Prototype review | `OBJ-1`, `REQ-2`, `REQ-3` |
-| `SM-3`: Live-state legibility | Current concept has 0 live-source samples at terminal cell density. | Continue if both required reviewers identify the live source as intentional animated content at one practical terminal density; stop if every tested density reads as noise. | Prototype review | `OBJ-2`, `REQ-4`, `REQ-5` |
+| `SM-3`: Live-state legibility | Current concept has 0 live-source samples at terminal cell density. | Continue if both required reviewers identify the live source as intentional animated content at one practical terminal density; stop if every tested density reads as noise. | Prototype review | `OBJ-2`, `REQ-4`, `REQ-5`, `VAL-9` |
 | `SM-4`: Preview performance | Current concept has no frame timing signal. | Continue if frame timing is visible or logged for terminal, transition, and live states with no recorded transition interval above 100 ms for more than 1 consecutive second; pivot if the threshold is missed. | Prototype review | `REQ-6` |
 | `SM-5`: Mechanism isolation | Current concept does not identify which mechanisms are necessary. | Continue if both required reviewers can name at least one control that materially affects continuity; pivot if only decorative effects make the transition acceptable. | Prototype review | `OBJ-3`, `REQ-5` |
 | `KC-1`: Effect masking kill criterion | Optional effects are not required in the current concept. | Stop if the transition only works when heavy visual effects hide the renderer change. | Prototype review | `OBJ-1`, `REQ-3` |
-| `KC-2`: Legibility kill criterion | Current concept has no measured legibility at terminal density. | Stop if the live content cannot be read as intentional at practical terminal cell densities. | Prototype review | `OBJ-2`, `REQ-4` |
+| `KC-2`: Legibility kill criterion | Current concept has no measured legibility at terminal density. | Stop if the live content cannot be read as intentional at practical terminal cell densities. | Prototype review | `OBJ-2`, `REQ-4`, `VAL-9` |
 | `KC-3`: Integration-cost kill criterion | Full terminal emulator integration is out of R0 scope. | Stop if maintaining the illusion requires production-terminal features before the core visual question can be answered. | Prototype review | `OBJ-3`, `NG-1` |
 
 Section status: Complete
@@ -307,23 +307,24 @@ Verification strategy:
 - `VAL-6`: Transition recordings verify whether conversion reads as terminal text coming alive. Related IDs: `REQ-2`, `REQ-3`, `FUNC-4`, `ACC-2`, `ACC-4`.
 - `VAL-7`: Basic frame timing verifies whether the prototype is interactive enough for design review. Related IDs: `REQ-6`, `ACC-5`.
 - `VAL-8`: Control exercise verifies that mix, reveal shape, glyph density, color adoption, cell size, transition mode, reveal origin, and live source each produce the expected visible change on the shared renderer surface. Related IDs: `REQ-5`, `ACC-6`.
+- `VAL-9`: Reviewer legibility exercise verifies whether both required reviewers can identify the live source as intentional animated content at one practical terminal density, and records the tested densities when every density reads as noise. Related IDs: `OBJ-2`, `SM-3`, `KC-2`, `RISK-2`, `REQ-4`, `REQ-5`, `FUNC-2`, `ACC-3`.
 
 | Requirement | Verification |
 | --- | --- |
 | REQ-1 | VAL-4 |
 | REQ-2 | VAL-6 |
 | REQ-3 | VAL-4, VAL-6 |
-| REQ-4 | VAL-5 |
-| REQ-5 | VAL-8 |
+| REQ-4 | VAL-5, VAL-9 |
+| REQ-5 | VAL-8, VAL-9 |
 | REQ-6 | VAL-7 |
 
 | Behavior | Mechanism | Verification |
 | --- | --- | --- |
 | FUNC-1 | TECH-1, TECH-2, TECH-3 | VAL-4 |
-| FUNC-2 | TECH-1, TECH-2, TECH-4, TECH-5 | VAL-5 |
+| FUNC-2 | TECH-1, TECH-2, TECH-4, TECH-5 | VAL-5, VAL-9 |
 | FUNC-3 | TECH-2, TECH-4, TECH-5, TECH-6, TECH-7 | VAL-8 |
 | FUNC-4 | TECH-6 | VAL-6 |
-| ACC-3 | TECH-4, TECH-5 | VAL-5, VAL-7 |
+| ACC-3 | TECH-4, TECH-5 | VAL-5, VAL-7, VAL-9 |
 | ACC-6 | TECH-2, TECH-4, TECH-5, TECH-6, TECH-7 | VAL-8 |
 
 Section status: Complete
@@ -341,7 +342,7 @@ Risks:
 | ID | Risk | Mitigation |
 | --- | --- | --- |
 | RISK-1 | Renderer switch is perceptible. | Use one rendering surface and shared glyph atlas from the first prototype. |
-| RISK-2 | Live content loses semantic clarity at terminal density. | Test multiple glyph sets, contrast mappings, and source compositions. |
+| RISK-2 | Live content loses semantic clarity at terminal density. | Use `VAL-9` to test multiple glyph sets, contrast mappings, and source compositions at practical terminal densities. |
 | RISK-3 | Real terminal requirements constrain animation. | Prototype with a simulated buffer first, then evaluate terminal integration separately. |
 | RISK-4 | Live source texture fails or is unavailable. | Remain in terminal mode and show a local error indicator outside the terminal illusion. |
 | RISK-7 | Performance is insufficient. | Keep source simple, measure frame timing, and move expensive operations into GPU passes where needed. |
