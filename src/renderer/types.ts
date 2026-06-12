@@ -53,6 +53,10 @@ export type RendererSettings = {
   glyphDensity: number;
   liveSource: LiveSourceKind;
   mix: number;
+  perspectiveAmount: number;
+  perspectiveEnabled: boolean;
+  perspectivePull: number;
+  perspectiveSkew: number;
   playing: boolean;
   revealFeather: number;
   revealOrigin: { x: number; y: number };

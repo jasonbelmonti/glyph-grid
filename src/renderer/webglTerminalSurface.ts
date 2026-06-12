@@ -255,6 +255,18 @@ export class WebGLTerminalSurface {
     gl.bufferData(gl.ARRAY_BUFFER, this.cellData, gl.DYNAMIC_DRAW);
 
     setUniform2f(gl, this.program, "uGrid", this.metrics.columns, this.metrics.rows);
+    gl.uniform2f(
+      gl.getUniformLocation(this.program, "uPerspectiveOrigin"),
+      this.settings.revealOrigin.x,
+      this.settings.revealOrigin.y
+    );
+    gl.uniform4f(
+      gl.getUniformLocation(this.program, "uPerspective"),
+      this.settings.perspectiveEnabled ? 1 : 0,
+      this.settings.perspectiveAmount,
+      this.settings.perspectiveSkew,
+      this.settings.perspectivePull
+    );
     if (this.atlas) {
       setUniform2f(gl, this.program, "uAtlasGrid", this.atlas.columns, this.atlas.rows);
     }
@@ -379,6 +391,8 @@ in vec4 aBg;
 
 uniform vec2 uGrid;
 uniform vec2 uAtlasGrid;
+uniform vec4 uPerspective;
+uniform vec2 uPerspectiveOrigin;
 
 out vec2 vUv;
 out vec4 vFg;
@@ -389,7 +403,20 @@ void main() {
   int cell = gl_InstanceID;
   float column = float(cell % columns);
   float row = floor(float(cell) / uGrid.x);
-  vec2 gridPosition = (vec2(column, row) + aVertex) / uGrid;
+  vec2 center = (vec2(column, row) + vec2(0.5)) / uGrid;
+  vec2 delta = center - uPerspectiveOrigin;
+  float distanceFromOrigin = length(delta);
+  float effect = uPerspective.x * uPerspective.y;
+  float falloff = smoothstep(0.0, 0.82, distanceFromOrigin);
+  vec2 local = aVertex - vec2(0.5);
+  float scale = 1.0 - effect * falloff * 0.22;
+  float skew = effect * uPerspective.z * falloff;
+  local.x += local.y * delta.x * skew * 0.78;
+  local.y -= local.x * delta.y * skew * 0.22;
+
+  vec2 pull = delta * falloff * falloff * effect * uPerspective.w * 0.22;
+  vec2 tangent = vec2(-delta.y, delta.x) * effect * uPerspective.z * falloff * 0.032;
+  vec2 gridPosition = center + pull + tangent + (local * scale) / uGrid;
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
   gl_Position = vec4(clip, 0.0, 1.0);
 

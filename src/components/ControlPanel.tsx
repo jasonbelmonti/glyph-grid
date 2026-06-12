@@ -158,6 +158,43 @@ export function ControlPanel({
         />
       </ControlGroup>
 
+      <ControlGroup title="Perspective">
+        <label className="toggle-row">
+          <span>Bend</span>
+          <input
+            checked={settings.perspectiveEnabled}
+            type="checkbox"
+            onChange={(event) =>
+              updateSettings({ perspectiveEnabled: event.target.checked })
+            }
+          />
+        </label>
+        <Slider
+          label="Scale"
+          max={1}
+          min={0}
+          step={0.01}
+          value={settings.perspectiveAmount}
+          onChange={(perspectiveAmount) => updateSettings({ perspectiveAmount })}
+        />
+        <Slider
+          label="Skew"
+          max={1}
+          min={0}
+          step={0.01}
+          value={settings.perspectiveSkew}
+          onChange={(perspectiveSkew) => updateSettings({ perspectiveSkew })}
+        />
+        <Slider
+          label="Offset"
+          max={1}
+          min={0}
+          step={0.01}
+          value={settings.perspectivePull}
+          onChange={(perspectivePull) => updateSettings({ perspectivePull })}
+        />
+      </ControlGroup>
+
       <ControlGroup title="Source">
         <div className="source-grid">
           {liveSources.map((source) => (

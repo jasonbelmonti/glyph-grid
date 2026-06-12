@@ -10,6 +10,10 @@ export type PrototypeSettings = {
   glyphDensity: number;
   liveSource: LiveSourceKind;
   mix: number;
+  perspectiveAmount: number;
+  perspectiveEnabled: boolean;
+  perspectivePull: number;
+  perspectiveSkew: number;
   playing: boolean;
   revealFeather: number;
   revealOrigin: { x: number; y: number };
@@ -37,6 +41,10 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   glyphDensity: 0.76,
   liveSource: "city",
   mix: 0.52,
+  perspectiveAmount: 0.58,
+  perspectiveEnabled: true,
+  perspectivePull: 0.52,
+  perspectiveSkew: 0.34,
   playing: true,
   revealFeather: 0.16,
   revealOrigin: { x: 0.42, y: 0.42 },
