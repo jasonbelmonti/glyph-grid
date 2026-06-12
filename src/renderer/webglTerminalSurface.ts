@@ -290,7 +290,16 @@ export class WebGLTerminalSurface {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTexture);
     gl.uniform1i(gl.getUniformLocation(this.program, "uAtlas"), 0);
+
+    gl.disable(gl.BLEND);
+    gl.uniform1f(gl.getUniformLocation(this.program, "uRenderLayer"), 0);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, cellCount);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.uniform1f(gl.getUniformLocation(this.program, "uRenderLayer"), 1);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, cellCount);
+    gl.disable(gl.BLEND);
   }
 }
 
@@ -410,6 +419,7 @@ uniform vec2 uAtlasGrid;
 uniform vec4 uPerspective;
 uniform vec4 uProjection;
 uniform vec2 uPerspectiveOrigin;
+uniform float uRenderLayer;
 uniform float uScatterEnabled;
 uniform float uProjectionScatter;
 uniform float uTime;
@@ -468,11 +478,12 @@ void main() {
   float scatterLift = individualLift * scatter;
   float liftShape = max(rippleLift, scatterLift + rippleLift * scatter * 0.18);
   float zLift = uProjection.y * liftShape * rippleEnvelope;
+  float layerLift = zLift * step(0.5, uRenderLayer);
   float scale = 1.0 - effect * falloff * 0.22;
   float skew = effect * uPerspective.z * falloff;
   local.x += local.y * delta.x * skew * 0.78;
   local.y -= local.x * delta.y * skew * 0.22;
-  local *= 1.0 + zLift * mix(0.72, 1.06, scatter);
+  local *= 1.0 + layerLift * mix(0.72, 1.06, scatter);
 
   vec2 pull = delta * falloff * falloff * effect * uPerspective.w * 0.22;
   vec2 tangent = vec2(-delta.y, delta.x) * effect * uPerspective.z * falloff * 0.032;
@@ -480,7 +491,7 @@ void main() {
     cos(cellSeed * 6.2831853),
     sin(cellSeedB * 6.2831853)
   ) * scatter * 0.58);
-  vec2 jump = cellDirection * zLift * mix(0.038, 0.052, scatter);
+  vec2 jump = cellDirection * layerLift * mix(0.038, 0.052, scatter);
   vec2 gridPosition = center + pull + tangent + jump + (local * scale) / uGrid;
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
   gl_Position = vec4(clip, 0.0, 1.0);
@@ -498,6 +509,7 @@ const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 uniform sampler2D uAtlas;
+uniform float uRenderLayer;
 
 in vec2 vUv;
 in vec4 vFg;
@@ -509,11 +521,20 @@ out vec4 outColor;
 void main() {
   float glyphAlpha = texture(uAtlas, vUv).a * vFg.a;
   float lift = clamp(vLift, 0.0, 1.0);
-  vec3 clearColor = vec3(0.012, 0.018, 0.018);
-  vec3 liftedBackground = mix(vBg.rgb, clearColor, lift * 0.94);
-  vec3 color = mix(liftedBackground, vFg.rgb, glyphAlpha);
-  color = mix(color, vFg.rgb, glyphAlpha * lift * 0.32);
-  color += vFg.rgb * glyphAlpha * lift * 0.42;
+
+  if (uRenderLayer > 0.5) {
+    float liftAlpha = smoothstep(0.025, 0.18, lift);
+    float strokeAlpha = glyphAlpha * liftAlpha;
+    if (strokeAlpha < 0.002) {
+      discard;
+    }
+    vec3 liftedGlyph = vFg.rgb + vFg.rgb * lift * 0.56;
+    outColor = vec4(liftedGlyph, strokeAlpha);
+    return;
+  }
+
+  float baseGlyphAlpha = glyphAlpha * (1.0 - lift * 0.28);
+  vec3 color = mix(vBg.rgb, vFg.rgb, baseGlyphAlpha);
   outColor = vec4(color, 1.0);
 }
 `;
