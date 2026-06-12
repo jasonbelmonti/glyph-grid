@@ -55,6 +55,7 @@ export type RendererSettings = {
   mix: number;
   perspectiveAmount: number;
   perspectiveEnabled: boolean;
+  perspectiveMotion: number;
   perspectivePull: number;
   perspectiveSkew: number;
   playing: boolean;
@@ -63,4 +64,7 @@ export type RendererSettings = {
   revealShape: RevealShape;
   revealSpeed: number;
   transitionMode: TransitionMode;
+  zRippleAmount: number;
+  zRippleEnabled: boolean;
+  zRippleSpeed: number;
 };

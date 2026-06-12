@@ -21,8 +21,18 @@ export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
       <span className={metrics.liveSourceAvailable ? "source-ok" : "source-down"}>
         {metrics.state}
       </span>
-      <span className={settings.perspectiveEnabled ? "source-ok" : ""}>
-        {settings.perspectiveEnabled ? "perspective" : "flat"}
+      <span
+        className={
+          settings.perspectiveEnabled || settings.zRippleEnabled ? "source-ok" : ""
+        }
+      >
+        {settings.perspectiveEnabled
+          ? settings.zRippleEnabled
+            ? "perspective+ripple"
+            : "perspective"
+          : settings.zRippleEnabled
+            ? "ripple"
+            : "flat"}
       </span>
       <svg className="frame-sparkline" viewBox="0 0 240 34" aria-hidden="true">
         <polyline points={points} />

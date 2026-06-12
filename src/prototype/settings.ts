@@ -12,6 +12,7 @@ export type PrototypeSettings = {
   mix: number;
   perspectiveAmount: number;
   perspectiveEnabled: boolean;
+  perspectiveMotion: number;
   perspectivePull: number;
   perspectiveSkew: number;
   playing: boolean;
@@ -20,6 +21,9 @@ export type PrototypeSettings = {
   revealShape: RevealShape;
   revealSpeed: number;
   transitionMode: TransitionMode;
+  zRippleAmount: number;
+  zRippleEnabled: boolean;
+  zRippleSpeed: number;
 };
 
 export type FrameMetrics = {
@@ -43,6 +47,7 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   mix: 0.52,
   perspectiveAmount: 0.58,
   perspectiveEnabled: true,
+  perspectiveMotion: 0.46,
   perspectivePull: 0.52,
   perspectiveSkew: 0.34,
   playing: true,
@@ -50,7 +55,10 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   revealOrigin: { x: 0.42, y: 0.42 },
   revealShape: "radial",
   revealSpeed: 0.42,
-  transitionMode: "text-to-ascii"
+  transitionMode: "text-to-ascii",
+  zRippleAmount: 0.62,
+  zRippleEnabled: true,
+  zRippleSpeed: 0.54
 };
 
 export function createDefaultMetrics(): FrameMetrics {

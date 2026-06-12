@@ -158,42 +158,7 @@ export function ControlPanel({
         />
       </ControlGroup>
 
-      <ControlGroup title="Perspective">
-        <label className="toggle-row">
-          <span>Bend</span>
-          <input
-            checked={settings.perspectiveEnabled}
-            type="checkbox"
-            onChange={(event) =>
-              updateSettings({ perspectiveEnabled: event.target.checked })
-            }
-          />
-        </label>
-        <Slider
-          label="Scale"
-          max={1}
-          min={0}
-          step={0.01}
-          value={settings.perspectiveAmount}
-          onChange={(perspectiveAmount) => updateSettings({ perspectiveAmount })}
-        />
-        <Slider
-          label="Skew"
-          max={1}
-          min={0}
-          step={0.01}
-          value={settings.perspectiveSkew}
-          onChange={(perspectiveSkew) => updateSettings({ perspectiveSkew })}
-        />
-        <Slider
-          label="Offset"
-          max={1}
-          min={0}
-          step={0.01}
-          value={settings.perspectivePull}
-          onChange={(perspectivePull) => updateSettings({ perspectivePull })}
-        />
-      </ControlGroup>
+      <PerspectiveControls settings={settings} updateSettings={updateSettings} />
 
       <ControlGroup title="Source">
         <div className="source-grid">
@@ -210,6 +175,84 @@ export function ControlPanel({
         </div>
       </ControlGroup>
     </aside>
+  );
+}
+
+function PerspectiveControls({
+  settings,
+  updateSettings
+}: Pick<ControlPanelProps, "settings" | "updateSettings">) {
+  return (
+    <ControlGroup title="Perspective">
+      <label className="toggle-row">
+        <span>Bend</span>
+        <input
+          checked={settings.perspectiveEnabled}
+          type="checkbox"
+          onChange={(event) =>
+            updateSettings({ perspectiveEnabled: event.target.checked })
+          }
+        />
+      </label>
+      <label className="toggle-row">
+        <span>Ripple</span>
+        <input
+          checked={settings.zRippleEnabled}
+          type="checkbox"
+          onChange={(event) =>
+            updateSettings({ zRippleEnabled: event.target.checked })
+          }
+        />
+      </label>
+      <Slider
+        label="Scale"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.perspectiveAmount}
+        onChange={(perspectiveAmount) => updateSettings({ perspectiveAmount })}
+      />
+      <Slider
+        label="Motion"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.perspectiveMotion}
+        onChange={(perspectiveMotion) => updateSettings({ perspectiveMotion })}
+      />
+      <Slider
+        label="Skew"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.perspectiveSkew}
+        onChange={(perspectiveSkew) => updateSettings({ perspectiveSkew })}
+      />
+      <Slider
+        label="Offset"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.perspectivePull}
+        onChange={(perspectivePull) => updateSettings({ perspectivePull })}
+      />
+      <Slider
+        label="Jump"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.zRippleAmount}
+        onChange={(zRippleAmount) => updateSettings({ zRippleAmount })}
+      />
+      <Slider
+        label="Rate"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.zRippleSpeed}
+        onChange={(zRippleSpeed) => updateSettings({ zRippleSpeed })}
+      />
+    </ControlGroup>
   );
 }
 

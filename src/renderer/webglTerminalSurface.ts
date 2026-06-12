@@ -124,7 +124,7 @@ export class WebGLTerminalSurface {
       }
     }
 
-    this.draw(cellCount);
+    this.draw(cellCount, time);
 
     const now = performance.now();
     const frameMs = now - this.lastFrameTime;
@@ -245,7 +245,7 @@ export class WebGLTerminalSurface {
     this.cellData[offset + 8] = cell.background[3];
   }
 
-  private draw(cellCount: number) {
+  private draw(cellCount: number, time: number) {
     const gl = this.gl;
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
@@ -267,6 +267,14 @@ export class WebGLTerminalSurface {
       this.settings.perspectiveSkew,
       this.settings.perspectivePull
     );
+    gl.uniform4f(
+      gl.getUniformLocation(this.program, "uProjection"),
+      this.settings.zRippleEnabled ? 1 : 0,
+      this.settings.zRippleAmount,
+      this.settings.zRippleSpeed,
+      this.settings.perspectiveMotion
+    );
+    gl.uniform1f(gl.getUniformLocation(this.program, "uTime"), time);
     if (this.atlas) {
       setUniform2f(gl, this.program, "uAtlasGrid", this.atlas.columns, this.atlas.rows);
     }
@@ -392,11 +400,14 @@ in vec4 aBg;
 uniform vec2 uGrid;
 uniform vec2 uAtlasGrid;
 uniform vec4 uPerspective;
+uniform vec4 uProjection;
 uniform vec2 uPerspectiveOrigin;
+uniform float uTime;
 
 out vec2 vUv;
 out vec4 vFg;
 out vec4 vBg;
+out float vLift;
 
 void main() {
   int columns = int(uGrid.x);
@@ -404,19 +415,39 @@ void main() {
   float column = float(cell % columns);
   float row = floor(float(cell) / uGrid.x);
   vec2 center = (vec2(column, row) + vec2(0.5)) / uGrid;
-  vec2 delta = center - uPerspectiveOrigin;
+  float bendMotion = uPerspective.x * uProjection.w;
+  float bendClock = uTime * 0.72;
+  vec2 animatedOrigin = uPerspectiveOrigin + vec2(
+    sin(bendClock * 0.73) * 0.045,
+    cos(bendClock * 0.57) * 0.035
+  ) * bendMotion;
+  vec2 delta = center - animatedOrigin;
   float distanceFromOrigin = length(delta);
-  float effect = uPerspective.x * uPerspective.y;
+  vec2 radial = delta / max(0.001, distanceFromOrigin);
+  float bendBreath = 1.0 + bendMotion * (
+    sin(bendClock + center.x * 2.8) * 0.16 +
+    cos(bendClock * 0.73 + center.y * 3.6) * 0.11
+  );
+  float effect = uPerspective.x * uPerspective.y * bendBreath;
   float falloff = smoothstep(0.0, 0.82, distanceFromOrigin);
   vec2 local = aVertex - vec2(0.5);
+  float rippleRate = mix(0.65, 2.15, clamp(uProjection.z, 0.0, 1.0));
+  float rippleWave = sin(distanceFromOrigin * 24.0 - uTime * rippleRate * 2.8);
+  float rippleCrest = pow(max(0.0, rippleWave), 4.0);
+  float rippleEnvelope =
+    smoothstep(0.025, 0.16, distanceFromOrigin) *
+    (1.0 - smoothstep(0.72, 1.02, distanceFromOrigin));
+  float zLift = uProjection.x * uProjection.y * rippleCrest * rippleEnvelope;
   float scale = 1.0 - effect * falloff * 0.22;
   float skew = effect * uPerspective.z * falloff;
   local.x += local.y * delta.x * skew * 0.78;
   local.y -= local.x * delta.y * skew * 0.22;
+  local *= 1.0 + zLift * 0.72;
 
   vec2 pull = delta * falloff * falloff * effect * uPerspective.w * 0.22;
   vec2 tangent = vec2(-delta.y, delta.x) * effect * uPerspective.z * falloff * 0.032;
-  vec2 gridPosition = center + pull + tangent + (local * scale) / uGrid;
+  vec2 jump = radial * zLift * 0.038;
+  vec2 gridPosition = center + pull + tangent + jump + (local * scale) / uGrid;
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
   gl_Position = vec4(clip, 0.0, 1.0);
 
@@ -425,6 +456,7 @@ void main() {
   vUv = (vec2(glyphColumn, glyphRow) + aVertex) / uAtlasGrid;
   vFg = aFg;
   vBg = aBg;
+  vLift = zLift;
 }
 `;
 
@@ -436,12 +468,16 @@ uniform sampler2D uAtlas;
 in vec2 vUv;
 in vec4 vFg;
 in vec4 vBg;
+in float vLift;
 
 out vec4 outColor;
 
 void main() {
   float glyphAlpha = texture(uAtlas, vUv).a * vFg.a;
   vec3 color = mix(vBg.rgb, vFg.rgb, glyphAlpha);
+  float lift = clamp(vLift, 0.0, 1.0);
+  color = mix(color, vFg.rgb, glyphAlpha * lift * 0.32);
+  color += vFg.rgb * glyphAlpha * lift * 0.42;
   outColor = vec4(color, 1.0);
 }
 `;
