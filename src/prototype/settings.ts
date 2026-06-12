@@ -5,10 +5,6 @@ import type {
 } from "../renderer/types";
 
 export type PrototypeSettings = {
-  cardDepth: number;
-  cardFocus: number;
-  cardTilt: number;
-  cardsEnabled: boolean;
   cellSize: number;
   colorAdoption: number;
   glyphDensity: number;
@@ -36,10 +32,6 @@ export type FrameMetrics = {
 };
 
 export const defaultPrototypeSettings: PrototypeSettings = {
-  cardDepth: 0.42,
-  cardFocus: 1.45,
-  cardTilt: 0.58,
-  cardsEnabled: true,
   cellSize: 10,
   colorAdoption: 0.82,
   glyphDensity: 0.76,

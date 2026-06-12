@@ -48,10 +48,6 @@ export type RevealShape = "radial" | "wipe" | "scanline" | "noise";
 export type TransitionMode = "text-to-ascii" | "ascii-to-text";
 
 export type RendererSettings = {
-  cardDepth: number;
-  cardFocus: number;
-  cardTilt: number;
-  cardsEnabled: boolean;
   cellSize: number;
   colorAdoption: number;
   glyphDensity: number;

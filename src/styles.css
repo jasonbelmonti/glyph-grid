@@ -271,8 +271,7 @@ button {
 }
 
 .control-row,
-.segmented-row,
-.toggle-row {
+.segmented-row {
   display: grid;
   grid-template-columns: 70px minmax(0, 1fr) 50px;
   align-items: center;
@@ -296,17 +295,6 @@ button {
 
 .segmented-row {
   grid-template-columns: 70px minmax(0, 1fr);
-}
-
-.toggle-row {
-  grid-template-columns: 70px minmax(0, 1fr);
-}
-
-.toggle-row input {
-  justify-self: start;
-  width: 42px;
-  height: 22px;
-  accent-color: var(--green);
 }
 
 .segmented-control {

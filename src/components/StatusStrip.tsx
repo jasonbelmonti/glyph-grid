@@ -21,9 +21,6 @@ export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
       <span className={metrics.liveSourceAvailable ? "source-ok" : "source-down"}>
         {metrics.state}
       </span>
-      <span className={settings.cardsEnabled ? "source-ok" : ""}>
-        {settings.cardsEnabled ? "cards-3d" : "flat"}
-      </span>
       <svg className="frame-sparkline" viewBox="0 0 240 34" aria-hidden="true">
         <polyline points={points} />
       </svg>
