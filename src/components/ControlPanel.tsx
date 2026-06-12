@@ -18,6 +18,8 @@ const shapeOptions: Array<{ icon: JSX.Element; label: string; value: RevealShape
 
 const liveSources: Array<{ label: string; value: LiveSourceKind }> = [
   { label: "city", value: "city" },
+  { label: "diagram", value: "diagram" },
+  { label: "3d diagram", value: "diagram3d" },
   { label: "field", value: "field" },
   { label: "waves", value: "waves" },
   { label: "offline", value: "offline" }

@@ -1,3 +1,5 @@
+import { sampleDiagram3dSource } from "./diagram3dSource";
+import { sampleDiagramSource } from "./diagramSource";
 import type { GridMetrics, LiveSample, LiveSourceKind } from "./types";
 
 export function sampleLiveSource(
@@ -16,6 +18,14 @@ export function sampleLiveSource(
 
   if (source === "field") {
     return sampleField(x, y, time);
+  }
+
+  if (source === "diagram") {
+    return sampleDiagramSource(column, row, metrics, time);
+  }
+
+  if (source === "diagram3d") {
+    return sampleDiagram3dSource(column, row, metrics, time);
   }
 
   if (source === "waves") {

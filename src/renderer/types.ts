@@ -36,11 +36,18 @@ export type GlyphAtlas = {
   cellWidth: number;
 };
 
-export type LiveSourceKind = "city" | "field" | "waves" | "offline";
+export type LiveSourceKind =
+  | "city"
+  | "diagram"
+  | "diagram3d"
+  | "field"
+  | "waves"
+  | "offline";
 
 export type LiveSample = {
   brightness: number;
   color: RGBA;
+  glyph?: string;
 };
 
 export type RevealShape = "radial" | "wipe" | "scanline" | "noise";

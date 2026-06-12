@@ -1,4 +1,4 @@
-import { glyphIndexFromRamp } from "./glyphAtlas";
+import { glyphIndexForChar, glyphIndexFromRamp } from "./glyphAtlas";
 import type { Cell, GlyphAtlas, LiveSample, RendererSettings, TerminalCell } from "./types";
 
 const LIVE_BACKGROUND: [number, number, number, number] = [0.012, 0.018, 0.018, 1];
@@ -12,7 +12,9 @@ export function sampleToAsciiCell(
     alpha: 1,
     background: LIVE_BACKGROUND,
     foreground: sample.color,
-    glyphIndex: glyphIndexFromRamp(atlas, sample.brightness, settings.glyphDensity)
+    glyphIndex: sample.glyph
+      ? glyphIndexForChar(atlas, sample.glyph)
+      : glyphIndexFromRamp(atlas, sample.brightness, settings.glyphDensity)
   };
 }
 
