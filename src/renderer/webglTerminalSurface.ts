@@ -508,8 +508,10 @@ out vec4 outColor;
 
 void main() {
   float glyphAlpha = texture(uAtlas, vUv).a * vFg.a;
-  vec3 color = mix(vBg.rgb, vFg.rgb, glyphAlpha);
   float lift = clamp(vLift, 0.0, 1.0);
+  vec3 clearColor = vec3(0.012, 0.018, 0.018);
+  vec3 liftedBackground = mix(vBg.rgb, clearColor, lift * 0.94);
+  vec3 color = mix(liftedBackground, vFg.rgb, glyphAlpha);
   color = mix(color, vFg.rgb, glyphAlpha * lift * 0.32);
   color += vFg.rgb * glyphAlpha * lift * 0.42;
   outColor = vec4(color, 1.0);
