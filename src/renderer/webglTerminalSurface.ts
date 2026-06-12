@@ -10,7 +10,7 @@ type RenderResult = FrameMetrics & {
   error?: string;
 };
 
-const FLOATS_PER_INSTANCE = 9;
+const FLOATS_PER_INSTANCE = 13;
 const MIX_SPEED_SCALE = 0.36;
 const CLEAR_COLOR = [0.012, 0.018, 0.018, 1] as const;
 const FALLBACK_CELL: Cell = {
@@ -116,10 +116,13 @@ export class WebGLTerminalSurface {
         const weight = sample
           ? transitionWeight(column, row, this.metrics, effectiveSettings, time)
           : 0;
+        const brightness = sample?.brightness ?? 0;
         accumulatedMix += weight;
         this.writeCell(
           index,
-          composeCells(terminal[index], live, weight, effectiveSettings)
+          composeCells(terminal[index], live, weight, effectiveSettings),
+          weight,
+          brightness
         );
       }
     }
@@ -232,7 +235,12 @@ export class WebGLTerminalSurface {
     );
   }
 
-  private writeCell(index: number, cell: Cell) {
+  private writeCell(
+    index: number,
+    cell: Cell,
+    transitionWeightValue: number,
+    brightness: number
+  ) {
     const offset = index * FLOATS_PER_INSTANCE;
     this.cellData[offset] = cell.glyphIndex;
     this.cellData[offset + 1] = cell.foreground[0];
@@ -243,6 +251,10 @@ export class WebGLTerminalSurface {
     this.cellData[offset + 6] = cell.background[1];
     this.cellData[offset + 7] = cell.background[2];
     this.cellData[offset + 8] = cell.background[3];
+    this.cellData[offset + 9] = transitionWeightValue;
+    this.cellData[offset + 10] = brightness;
+    this.cellData[offset + 11] = deterministicPhase(index);
+    this.cellData[offset + 12] = 0;
   }
 
   private draw(cellCount: number) {
@@ -255,6 +267,14 @@ export class WebGLTerminalSurface {
     gl.bufferData(gl.ARRAY_BUFFER, this.cellData, gl.DYNAMIC_DRAW);
 
     setUniform2f(gl, this.program, "uGrid", this.metrics.columns, this.metrics.rows);
+    gl.uniform1f(gl.getUniformLocation(this.program, "uTime"), this.frame * 0.016);
+    gl.uniform4f(
+      gl.getUniformLocation(this.program, "uCards"),
+      this.settings.cardsEnabled ? 1 : 0,
+      this.settings.cardDepth,
+      this.settings.cardTilt,
+      this.settings.cardFocus
+    );
     if (this.atlas) {
       setUniform2f(gl, this.program, "uAtlasGrid", this.atlas.columns, this.atlas.rows);
     }
@@ -290,9 +310,15 @@ function createVertexArray(gl: WebGL2RenderingContext, program: WebGLProgram) {
   defineAttribute(gl, program, "aGlyph", 1, stride, 0);
   defineAttribute(gl, program, "aFg", 4, stride, 1);
   defineAttribute(gl, program, "aBg", 4, stride, 5);
+  defineAttribute(gl, program, "aCard", 4, stride, 9);
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
   return { instanceBuffer, vao };
+}
+
+function deterministicPhase(index: number) {
+  const raw = Math.sin(index * 12.9898) * 43758.5453;
+  return raw - Math.floor(raw);
 }
 
 function defineAttribute(
@@ -376,28 +402,59 @@ in vec2 aVertex;
 in float aGlyph;
 in vec4 aFg;
 in vec4 aBg;
+in vec4 aCard;
 
 uniform vec2 uGrid;
 uniform vec2 uAtlasGrid;
+uniform float uTime;
+uniform vec4 uCards;
 
 out vec2 vUv;
 out vec4 vFg;
 out vec4 vBg;
+out vec2 vLocal;
+out float vCardPower;
 
 void main() {
   int columns = int(uGrid.x);
   int cell = gl_InstanceID;
   float column = float(cell % columns);
   float row = floor(float(cell) / uGrid.x);
-  vec2 gridPosition = (vec2(column, row) + aVertex) / uGrid;
+
+  float transitionMix = clamp(aCard.x, 0.0, 1.0);
+  float brightness = clamp(aCard.y, 0.0, 1.0);
+  float phase = aCard.z * 6.28318530718;
+  float cardPower = uCards.x * smoothstep(0.02, 0.9, transitionMix);
+  float wave = sin(uTime * 1.8 + phase + row * 0.11 + column * 0.07);
+  float tiltX = cardPower * uCards.z * (brightness - 0.48) * 0.95;
+  float tiltY = cardPower * uCards.z * (wave * 0.46 + (transitionMix - 0.5) * 0.38);
+  float depth = cardPower * uCards.y * (brightness * 0.78 + transitionMix * 0.4 + wave * 0.08);
+
+  vec2 local = aVertex - vec2(0.5);
+  local *= mix(1.0, 0.82, cardPower);
+  vec3 card = vec3(local, 0.0);
+
+  float cx = cos(tiltX);
+  float sx = sin(tiltX);
+  card.yz = mat2(cx, -sx, sx, cx) * card.yz;
+
+  float cy = cos(tiltY);
+  float sy = sin(tiltY);
+  card.xz = mat2(cy, sy, -sy, cy) * card.xz;
+
+  card.z += depth;
+  float perspective = uCards.w / max(0.35, uCards.w - card.z);
+  vec2 gridPosition = (vec2(column, row) + vec2(0.5) + card.xy * perspective) / uGrid;
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
-  gl_Position = vec4(clip, 0.0, 1.0);
+  gl_Position = vec4(clip, card.z * 0.02, 1.0);
 
   float glyphColumn = mod(aGlyph, uAtlasGrid.x);
   float glyphRow = floor(aGlyph / uAtlasGrid.x);
   vUv = (vec2(glyphColumn, glyphRow) + aVertex) / uAtlasGrid;
   vFg = aFg;
   vBg = aBg;
+  vLocal = aVertex;
+  vCardPower = cardPower;
 }
 `;
 
@@ -409,12 +466,18 @@ uniform sampler2D uAtlas;
 in vec2 vUv;
 in vec4 vFg;
 in vec4 vBg;
+in vec2 vLocal;
+in float vCardPower;
 
 out vec4 outColor;
 
 void main() {
   float glyphAlpha = texture(uAtlas, vUv).a * vFg.a;
-  vec3 color = mix(vBg.rgb, vFg.rgb, glyphAlpha);
+  vec2 edgeDistance = min(vLocal, vec2(1.0) - vLocal);
+  float edge = 1.0 - smoothstep(0.0, 0.09, min(edgeDistance.x, edgeDistance.y));
+  vec3 cardBack = mix(vBg.rgb, vBg.rgb + vec3(0.035, 0.045, 0.038), vCardPower);
+  vec3 color = mix(cardBack, vFg.rgb, glyphAlpha);
+  color += edge * vCardPower * vec3(0.045, 0.08, 0.04);
   outColor = vec4(color, 1.0);
 }
 `;

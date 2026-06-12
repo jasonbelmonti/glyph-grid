@@ -158,6 +158,43 @@ export function ControlPanel({
         />
       </ControlGroup>
 
+      <ControlGroup title="3D Cards">
+        <label className="toggle-row">
+          <span>Cards</span>
+          <input
+            checked={settings.cardsEnabled}
+            type="checkbox"
+            onChange={(event) =>
+              updateSettings({ cardsEnabled: event.target.checked })
+            }
+          />
+        </label>
+        <Slider
+          label="Depth"
+          max={1}
+          min={0}
+          step={0.01}
+          value={settings.cardDepth}
+          onChange={(cardDepth) => updateSettings({ cardDepth })}
+        />
+        <Slider
+          label="Tilt"
+          max={1}
+          min={0}
+          step={0.01}
+          value={settings.cardTilt}
+          onChange={(cardTilt) => updateSettings({ cardTilt })}
+        />
+        <Slider
+          label="Focus"
+          max={2.6}
+          min={0.7}
+          step={0.05}
+          value={settings.cardFocus}
+          onChange={(cardFocus) => updateSettings({ cardFocus })}
+        />
+      </ControlGroup>
+
       <ControlGroup title="Source">
         <div className="source-grid">
           {liveSources.map((source) => (
