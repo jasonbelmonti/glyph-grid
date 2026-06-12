@@ -11,6 +11,8 @@ type RenderResult = FrameMetrics & {
 };
 
 const FLOATS_PER_INSTANCE = 9;
+const ASSEMBLY_RISE_SPEED = 1.28;
+const ASSEMBLY_RETURN_SPEED = 1.72;
 const MIX_SPEED_SCALE = 0.36;
 const CLEAR_COLOR = [0.012, 0.018, 0.018, 1] as const;
 const FALLBACK_CELL: Cell = {
@@ -21,6 +23,7 @@ const FALLBACK_CELL: Cell = {
 };
 
 export class WebGLTerminalSurface {
+  private assemblyProgress = 0;
   private atlas: GlyphAtlas | null = null;
   private atlasTexture: WebGLTexture | null = null;
   private autoProgress: number;
@@ -150,6 +153,7 @@ export class WebGLTerminalSurface {
   private resolveFrameSettings(time: number, settings: RendererSettings): RendererSettings {
     const delta = this.lastRenderTime > 0 ? Math.min(0.08, time - this.lastRenderTime) : 0;
     this.lastRenderTime = time;
+    this.updateAssemblyProgress(delta, settings.assemblyEnabled);
 
     if (!settings.playing) {
       this.autoProgress = settings.mix;
@@ -170,6 +174,21 @@ export class WebGLTerminalSurface {
     }
 
     return { ...settings, mix: this.autoProgress };
+  }
+
+  private updateAssemblyProgress(delta: number, enabled: boolean) {
+    const target = enabled ? 1 : 0;
+    const speed = enabled ? ASSEMBLY_RISE_SPEED : ASSEMBLY_RETURN_SPEED;
+    const step = delta * speed;
+
+    if (this.assemblyProgress < target) {
+      this.assemblyProgress = Math.min(target, this.assemblyProgress + step);
+      return;
+    }
+
+    if (this.assemblyProgress > target) {
+      this.assemblyProgress = Math.max(target, this.assemblyProgress - step);
+    }
   }
 
   private ensureSize() {
@@ -281,6 +300,10 @@ export class WebGLTerminalSurface {
     gl.uniform1f(
       gl.getUniformLocation(this.program, "uScatterEnabled"),
       this.settings.zScatterEnabled ? 1 : 0
+    );
+    gl.uniform1f(
+      gl.getUniformLocation(this.program, "uAssemblyProgress"),
+      this.assemblyProgress
     );
     gl.uniform1f(gl.getUniformLocation(this.program, "uTime"), time);
     if (this.atlas) {
@@ -422,6 +445,7 @@ uniform vec2 uPerspectiveOrigin;
 uniform float uRenderLayer;
 uniform float uScatterEnabled;
 uniform float uProjectionScatter;
+uniform float uAssemblyProgress;
 uniform float uTime;
 
 out vec2 vUv;
@@ -431,6 +455,64 @@ out float vLift;
 
 float hashCell(vec2 value) {
   return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+}
+
+vec3 rotateCubeX(vec3 point, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return vec3(point.x, point.y * c - point.z * s, point.y * s + point.z * c);
+}
+
+vec3 rotateCubeY(vec3 point, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return vec3(point.x * c + point.z * s, point.y, -point.x * s + point.z * c);
+}
+
+vec3 cubeEdgePoint(float selector, float t) {
+  int edge = int(floor(selector * 12.0));
+  float side = 0.48;
+  float front = 0.52;
+  float back = -0.52;
+  vec3 a = vec3(-side, -side, front);
+  vec3 b = vec3(side, -side, front);
+
+  if (edge == 1) {
+    a = vec3(side, -side, front);
+    b = vec3(side, side, front);
+  } else if (edge == 2) {
+    a = vec3(side, side, front);
+    b = vec3(-side, side, front);
+  } else if (edge == 3) {
+    a = vec3(-side, side, front);
+    b = vec3(-side, -side, front);
+  } else if (edge == 4) {
+    a = vec3(-side, -side, back);
+    b = vec3(side, -side, back);
+  } else if (edge == 5) {
+    a = vec3(side, -side, back);
+    b = vec3(side, side, back);
+  } else if (edge == 6) {
+    a = vec3(side, side, back);
+    b = vec3(-side, side, back);
+  } else if (edge == 7) {
+    a = vec3(-side, side, back);
+    b = vec3(-side, -side, back);
+  } else if (edge == 8) {
+    a = vec3(-side, -side, front);
+    b = vec3(-side, -side, back);
+  } else if (edge == 9) {
+    a = vec3(side, -side, front);
+    b = vec3(side, -side, back);
+  } else if (edge == 10) {
+    a = vec3(side, side, front);
+    b = vec3(side, side, back);
+  } else if (edge == 11) {
+    a = vec3(-side, side, front);
+    b = vec3(-side, side, back);
+  }
+
+  return mix(a, b, t);
 }
 
 void main() {
@@ -493,15 +575,37 @@ void main() {
   ) * scatter * 0.58);
   vec2 jump = cellDirection * layerLift * mix(0.038, 0.052, scatter);
   vec2 gridPosition = center + pull + tangent + jump + (local * scale) / uGrid;
+  float assembly = smoothstep(0.0, 1.0, uAssemblyProgress) * step(0.5, uRenderLayer);
+  float assemblySeed = fract(float(cell) * 0.017 + aGlyph * 0.031 + cellSeed * 0.37);
+  float cubeTravel = fract(float(cell) * 0.06711056 + aGlyph * 0.007 + cellSeedB * 1.91);
+  float assemblyLeap = sin(assembly * 3.1415926) * mix(0.08, 0.18, cellSeedC);
+  vec3 cubePoint = cubeEdgePoint(assemblySeed, cubeTravel);
+  float cubeYaw = -0.58 + assembly * 0.2 + sin(uTime * 0.34) * 0.08;
+  float cubePitch = 0.36 + sin(uTime * 0.27) * 0.06;
+  cubePoint = rotateCubeX(rotateCubeY(cubePoint, cubeYaw), cubePitch);
+  float cubeDepth = clamp((cubePoint.z + 0.72) / 1.44, 0.0, 1.0);
+  float cubePerspective = 1.28 / (2.0 - cubePoint.z);
+  vec2 assemblyTarget =
+    vec2(0.5, 0.45) +
+    cubePoint.xy * cubePerspective * 0.44 +
+    vec2(cellSeed - 0.5, cellSeedB - 0.5) * mix(0.012, 0.03, cubeDepth);
+  vec2 assemblyArc = vec2(
+    (cellSeed - 0.5) * 0.18,
+    -0.13 - cellSeedB * 0.1
+  ) * assemblyLeap;
+  float assemblyScale = mix(1.0, mix(1.02, 1.9, cubeDepth), assembly);
+  vec2 assemblyLocal = (local * assemblyScale * scale) / uGrid;
+  gridPosition = mix(gridPosition, assemblyTarget + assemblyArc + assemblyLocal, assembly);
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
   gl_Position = vec4(clip, 0.0, 1.0);
 
   float glyphColumn = mod(aGlyph, uAtlasGrid.x);
   float glyphRow = floor(aGlyph / uAtlasGrid.x);
   vUv = (vec2(glyphColumn, glyphRow) + aVertex) / uAtlasGrid;
-  vFg = aFg;
+  float cubeShade = mix(0.58, 1.34, cubeDepth);
+  vFg = vec4(aFg.rgb * mix(1.0, cubeShade, assembly), aFg.a);
   vBg = aBg;
-  vLift = zLift;
+  vLift = max(zLift, assembly * mix(0.32, 0.96, cubeDepth) + assemblyLeap * 1.8);
 }
 `;
 
@@ -509,6 +613,7 @@ const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 uniform sampler2D uAtlas;
+uniform float uAssemblyProgress;
 uniform float uRenderLayer;
 
 in vec2 vUv;
@@ -531,6 +636,7 @@ void main() {
     return;
   }
 
-  outColor = vec4(vBg.rgb, 1.0);
+  float sourceFade = 1.0 - smoothstep(0.08, 0.7, uAssemblyProgress);
+  outColor = vec4(vBg.rgb * sourceFade, 1.0);
 }
 `;

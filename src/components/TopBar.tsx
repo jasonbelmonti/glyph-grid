@@ -5,6 +5,7 @@ import {
   Play,
   RotateCcw,
   Settings,
+  Sparkles,
   Square,
   Terminal
 } from "lucide-react";
@@ -62,6 +63,14 @@ export function TopBar({ settings, updateSettings }: TopBarProps) {
           onClick={() => updateSettings({ mix: 0.52, playing: true })}
         >
           <RotateCcw size={17} />
+        </button>
+        <button
+          className={`icon-button ${settings.assemblyEnabled ? "is-selected" : ""}`}
+          type="button"
+          aria-label={settings.assemblyEnabled ? "Return glyphs to grid" : "Assemble glyphs"}
+          onClick={() => updateSettings({ assemblyEnabled: !settings.assemblyEnabled })}
+        >
+          <Sparkles size={17} />
         </button>
       </div>
 

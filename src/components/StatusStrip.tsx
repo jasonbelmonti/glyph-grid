@@ -46,6 +46,7 @@ export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
 
 function describeProjectionMode(settings: PrototypeSettings) {
   const modes = [
+    settings.assemblyEnabled ? "assemble" : "",
     settings.perspectiveEnabled ? "perspective" : "",
     settings.zRippleEnabled ? "ripple" : "",
     settings.zScatterEnabled ? "scatter" : ""

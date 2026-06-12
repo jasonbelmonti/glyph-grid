@@ -5,6 +5,7 @@ import type {
 } from "../renderer/types";
 
 export type PrototypeSettings = {
+  assemblyEnabled: boolean;
   cellSize: number;
   colorAdoption: number;
   glyphDensity: number;
@@ -42,6 +43,7 @@ export type FrameMetrics = {
 };
 
 export const defaultPrototypeSettings: PrototypeSettings = {
+  assemblyEnabled: false,
   cellSize: 10,
   colorAdoption: 0.82,
   glyphDensity: 0.76,

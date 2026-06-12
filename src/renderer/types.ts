@@ -48,6 +48,7 @@ export type RevealShape = "radial" | "wipe" | "scanline" | "noise";
 export type TransitionMode = "text-to-ascii" | "ascii-to-text";
 
 export type RendererSettings = {
+  assemblyEnabled: boolean;
   cellSize: number;
   colorAdoption: number;
   glyphDensity: number;
