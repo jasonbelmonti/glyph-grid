@@ -23,6 +23,7 @@ export type PrototypeSettings = {
   transitionMode: TransitionMode;
   zRippleAmount: number;
   zRippleEnabled: boolean;
+  zScatterEnabled: boolean;
   zRippleScatter: number;
   zRippleSpeed: number;
 };
@@ -59,6 +60,7 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   transitionMode: "text-to-ascii",
   zRippleAmount: 0.62,
   zRippleEnabled: true,
+  zScatterEnabled: true,
   zRippleScatter: 0.72,
   zRippleSpeed: 0.54
 };

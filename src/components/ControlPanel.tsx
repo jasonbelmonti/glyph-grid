@@ -204,6 +204,16 @@ function PerspectiveControls({
           }
         />
       </label>
+      <label className="toggle-row">
+        <span>Scatter</span>
+        <input
+          checked={settings.zScatterEnabled}
+          type="checkbox"
+          onChange={(event) =>
+            updateSettings({ zScatterEnabled: event.target.checked })
+          }
+        />
+      </label>
       <Slider
         label="Scale"
         max={1}
@@ -245,7 +255,7 @@ function PerspectiveControls({
         onChange={(zRippleAmount) => updateSettings({ zRippleAmount })}
       />
       <Slider
-        label="Scatter"
+        label="Spread"
         max={1}
         min={0}
         step={0.01}

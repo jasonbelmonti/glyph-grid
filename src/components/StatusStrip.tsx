@@ -9,6 +9,7 @@ type StatusStripProps = {
 
 export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
   const points = toSparklinePoints(history);
+  const mode = describeProjectionMode(settings);
 
   return (
     <footer className="status-strip" aria-label="renderer status">
@@ -21,19 +22,7 @@ export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
       <span className={metrics.liveSourceAvailable ? "source-ok" : "source-down"}>
         {metrics.state}
       </span>
-      <span
-        className={
-          settings.perspectiveEnabled || settings.zRippleEnabled ? "source-ok" : ""
-        }
-      >
-        {settings.perspectiveEnabled
-          ? settings.zRippleEnabled
-            ? "perspective+ripple"
-            : "perspective"
-          : settings.zRippleEnabled
-            ? "ripple"
-            : "flat"}
-      </span>
+      <span className={mode === "flat" ? "" : "source-ok"}>{mode}</span>
       <svg className="frame-sparkline" viewBox="0 0 240 34" aria-hidden="true">
         <polyline points={points} />
       </svg>
@@ -53,6 +42,16 @@ export function StatusStrip({ history, metrics, settings }: StatusStripProps) {
       </div>
     </footer>
   );
+}
+
+function describeProjectionMode(settings: PrototypeSettings) {
+  const modes = [
+    settings.perspectiveEnabled ? "perspective" : "",
+    settings.zRippleEnabled ? "ripple" : "",
+    settings.zScatterEnabled ? "scatter" : ""
+  ].filter(Boolean);
+
+  return modes.length > 0 ? modes.join("+") : "flat";
 }
 
 function toSparklinePoints(history: number[]) {

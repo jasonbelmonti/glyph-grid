@@ -278,6 +278,10 @@ export class WebGLTerminalSurface {
       gl.getUniformLocation(this.program, "uProjectionScatter"),
       this.settings.zRippleScatter
     );
+    gl.uniform1f(
+      gl.getUniformLocation(this.program, "uScatterEnabled"),
+      this.settings.zScatterEnabled ? 1 : 0
+    );
     gl.uniform1f(gl.getUniformLocation(this.program, "uTime"), time);
     if (this.atlas) {
       setUniform2f(gl, this.program, "uAtlasGrid", this.atlas.columns, this.atlas.rows);
@@ -406,6 +410,7 @@ uniform vec2 uAtlasGrid;
 uniform vec4 uPerspective;
 uniform vec4 uProjection;
 uniform vec2 uPerspectiveOrigin;
+uniform float uScatterEnabled;
 uniform float uProjectionScatter;
 uniform float uTime;
 
@@ -446,7 +451,8 @@ void main() {
   float rippleEnvelope =
     smoothstep(0.025, 0.16, distanceFromOrigin) *
     (1.0 - smoothstep(0.72, 1.02, distanceFromOrigin));
-  float scatter = clamp(uProjectionScatter, 0.0, 1.0);
+  float rippleActive = uProjection.x;
+  float scatter = clamp(uProjectionScatter, 0.0, 1.0) * uScatterEnabled;
   float cellSeed = hashCell(vec2(column + aGlyph * 0.37, row - aGlyph * 0.19));
   float cellSeedB = hashCell(vec2(row + aGlyph * 0.11, column + 9.7));
   float cellSeedC = hashCell(vec2(column * 0.41 + row * 1.37, aGlyph + 3.1));
@@ -458,8 +464,10 @@ void main() {
     pow(max(0.0, sin(pulseClock * mix(0.43, 0.78, cellSeedC) + cellSeedB * 6.2831853)), 7.0);
   float individualLift = max(individualPulse, secondaryPulse * 0.55);
   individualLift *= mix(0.55, 1.35, cellSeedC);
-  float liftShape = mix(rippleCrest, max(rippleCrest * 0.32, individualLift), scatter);
-  float zLift = uProjection.x * uProjection.y * liftShape * rippleEnvelope;
+  float rippleLift = rippleCrest * rippleActive;
+  float scatterLift = individualLift * scatter;
+  float liftShape = max(rippleLift, scatterLift + rippleLift * scatter * 0.18);
+  float zLift = uProjection.y * liftShape * rippleEnvelope;
   float scale = 1.0 - effect * falloff * 0.22;
   float skew = effect * uPerspective.z * falloff;
   local.x += local.y * delta.x * skew * 0.78;
