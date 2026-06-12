@@ -523,19 +523,14 @@ void main() {
   float lift = clamp(vLift, 0.0, 1.0);
 
   if (uRenderLayer > 0.5) {
-    float liftAlpha = smoothstep(0.025, 0.18, lift);
-    float strokeAlpha = glyphAlpha * liftAlpha;
-    if (strokeAlpha < 0.002) {
+    if (glyphAlpha < 0.002) {
       discard;
     }
     vec3 liftedGlyph = vFg.rgb + vFg.rgb * lift * 0.56;
-    outColor = vec4(liftedGlyph, strokeAlpha);
+    outColor = vec4(liftedGlyph, glyphAlpha);
     return;
   }
 
-  float liftTransfer = smoothstep(0.025, 0.16, lift);
-  float baseGlyphAlpha = glyphAlpha * (1.0 - liftTransfer * 0.96);
-  vec3 color = mix(vBg.rgb, vFg.rgb, baseGlyphAlpha);
-  outColor = vec4(color, 1.0);
+  outColor = vec4(vBg.rgb, 1.0);
 }
 `;
