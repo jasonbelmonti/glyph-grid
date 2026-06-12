@@ -48,7 +48,7 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   liveSource: "city",
   mix: 0.52,
   perspectiveAmount: 0.58,
-  perspectiveEnabled: true,
+  perspectiveEnabled: false,
   perspectiveMotion: 0.46,
   perspectivePull: 0.52,
   perspectiveSkew: 0.34,
@@ -59,8 +59,8 @@ export const defaultPrototypeSettings: PrototypeSettings = {
   revealSpeed: 0.42,
   transitionMode: "text-to-ascii",
   zRippleAmount: 0.62,
-  zRippleEnabled: true,
-  zScatterEnabled: true,
+  zRippleEnabled: false,
+  zScatterEnabled: false,
   zRippleScatter: 0.72,
   zRippleSpeed: 0.54
 };
