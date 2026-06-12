@@ -274,6 +274,10 @@ export class WebGLTerminalSurface {
       this.settings.zRippleSpeed,
       this.settings.perspectiveMotion
     );
+    gl.uniform1f(
+      gl.getUniformLocation(this.program, "uProjectionScatter"),
+      this.settings.zRippleScatter
+    );
     gl.uniform1f(gl.getUniformLocation(this.program, "uTime"), time);
     if (this.atlas) {
       setUniform2f(gl, this.program, "uAtlasGrid", this.atlas.columns, this.atlas.rows);
@@ -402,12 +406,17 @@ uniform vec2 uAtlasGrid;
 uniform vec4 uPerspective;
 uniform vec4 uProjection;
 uniform vec2 uPerspectiveOrigin;
+uniform float uProjectionScatter;
 uniform float uTime;
 
 out vec2 vUv;
 out vec4 vFg;
 out vec4 vBg;
 out float vLift;
+
+float hashCell(vec2 value) {
+  return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+}
 
 void main() {
   int columns = int(uGrid.x);
@@ -437,16 +446,33 @@ void main() {
   float rippleEnvelope =
     smoothstep(0.025, 0.16, distanceFromOrigin) *
     (1.0 - smoothstep(0.72, 1.02, distanceFromOrigin));
-  float zLift = uProjection.x * uProjection.y * rippleCrest * rippleEnvelope;
+  float scatter = clamp(uProjectionScatter, 0.0, 1.0);
+  float cellSeed = hashCell(vec2(column + aGlyph * 0.37, row - aGlyph * 0.19));
+  float cellSeedB = hashCell(vec2(row + aGlyph * 0.11, column + 9.7));
+  float cellSeedC = hashCell(vec2(column * 0.41 + row * 1.37, aGlyph + 3.1));
+  float pulseClock =
+    uTime * rippleRate * mix(1.15, 2.9, cellSeedB) + cellSeed * 6.2831853;
+  float pulseShape = mix(9.5, 3.8, scatter);
+  float individualPulse = pow(max(0.0, sin(pulseClock)), pulseShape);
+  float secondaryPulse =
+    pow(max(0.0, sin(pulseClock * mix(0.43, 0.78, cellSeedC) + cellSeedB * 6.2831853)), 7.0);
+  float individualLift = max(individualPulse, secondaryPulse * 0.55);
+  individualLift *= mix(0.55, 1.35, cellSeedC);
+  float liftShape = mix(rippleCrest, max(rippleCrest * 0.32, individualLift), scatter);
+  float zLift = uProjection.x * uProjection.y * liftShape * rippleEnvelope;
   float scale = 1.0 - effect * falloff * 0.22;
   float skew = effect * uPerspective.z * falloff;
   local.x += local.y * delta.x * skew * 0.78;
   local.y -= local.x * delta.y * skew * 0.22;
-  local *= 1.0 + zLift * 0.72;
+  local *= 1.0 + zLift * mix(0.72, 1.06, scatter);
 
   vec2 pull = delta * falloff * falloff * effect * uPerspective.w * 0.22;
   vec2 tangent = vec2(-delta.y, delta.x) * effect * uPerspective.z * falloff * 0.032;
-  vec2 jump = radial * zLift * 0.038;
+  vec2 cellDirection = normalize(radial + vec2(
+    cos(cellSeed * 6.2831853),
+    sin(cellSeedB * 6.2831853)
+  ) * scatter * 0.58);
+  vec2 jump = cellDirection * zLift * mix(0.038, 0.052, scatter);
   vec2 gridPosition = center + pull + tangent + jump + (local * scale) / uGrid;
   vec2 clip = vec2(gridPosition.x * 2.0 - 1.0, 1.0 - gridPosition.y * 2.0);
   gl_Position = vec4(clip, 0.0, 1.0);

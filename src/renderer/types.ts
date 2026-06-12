@@ -66,5 +66,6 @@ export type RendererSettings = {
   transitionMode: TransitionMode;
   zRippleAmount: number;
   zRippleEnabled: boolean;
+  zRippleScatter: number;
   zRippleSpeed: number;
 };

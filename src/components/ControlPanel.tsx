@@ -245,6 +245,14 @@ function PerspectiveControls({
         onChange={(zRippleAmount) => updateSettings({ zRippleAmount })}
       />
       <Slider
+        label="Scatter"
+        max={1}
+        min={0}
+        step={0.01}
+        value={settings.zRippleScatter}
+        onChange={(zRippleScatter) => updateSettings({ zRippleScatter })}
+      />
+      <Slider
         label="Rate"
         max={1}
         min={0}
