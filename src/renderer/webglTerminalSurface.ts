@@ -533,7 +533,8 @@ void main() {
     return;
   }
 
-  float baseGlyphAlpha = glyphAlpha * (1.0 - lift * 0.28);
+  float liftTransfer = smoothstep(0.025, 0.16, lift);
+  float baseGlyphAlpha = glyphAlpha * (1.0 - liftTransfer * 0.96);
   vec3 color = mix(vBg.rgb, vFg.rgb, baseGlyphAlpha);
   outColor = vec4(color, 1.0);
 }
