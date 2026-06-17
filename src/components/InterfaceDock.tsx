@@ -4,8 +4,7 @@ import {
   CircuitBoard,
   ClipboardList,
   Radar,
-  Terminal,
-  WandSparkles
+  Terminal
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FrameMetrics, PrototypeSettings } from "../prototype/settings";
@@ -40,22 +39,6 @@ const dockActions: DockAction[] = [
       perspectiveMotion: 0.78,
       perspectiveSkew: 0.58,
       playing: true
-    }
-  },
-  {
-    command: "assemble --target cube --depth 1.0",
-    description: "Push individual glyphs forward into a spatial object.",
-    icon: Box,
-    id: "cube",
-    label: "Assemble cube",
-    patch: {
-      assemblyEnabled: true,
-      liveSource: "diagram3d",
-      mix: 0.86,
-      perspectiveAmount: 0.94,
-      perspectiveMotion: 0.72,
-      playing: true,
-      zRippleAmount: 0.86
     }
   },
   {
@@ -176,8 +159,8 @@ export function InterfaceDock({
           });
         }}
       >
-        <WandSparkles size={18} />
-        <span>{settings.assemblyEnabled ? "Return to page" : "Trigger leap"}</span>
+        <Box size={18} />
+        <span>{settings.assemblyEnabled ? "Return to page" : "Assemble cube"}</span>
       </button>
     </section>
   );
