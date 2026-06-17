@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ControlPanel } from "./components/ControlPanel";
+import { InterfaceDock } from "./components/InterfaceDock";
 import { StatusStrip } from "./components/StatusStrip";
 import { TerminalSurface } from "./components/TerminalSurface";
 import { TopBar } from "./components/TopBar";
@@ -84,13 +85,21 @@ export function App() {
       <TopBar settings={settings} updateSettings={updateSettings} />
 
       <section className="workbench" aria-label="glyph-grid prototype">
-        <div className="surface-frame">
-          <TerminalSurface
-            ariaLabel={canvasLabel}
+        <section className="surface-workspace" aria-label="terminal workspace">
+          <div className="surface-frame">
+            <TerminalSurface
+              ariaLabel={canvasLabel}
+              settings={settings}
+              onMetrics={handleMetrics}
+            />
+          </div>
+
+          <InterfaceDock
+            metrics={metrics}
             settings={settings}
-            onMetrics={handleMetrics}
+            updateSettings={updateSettings}
           />
-        </div>
+        </section>
 
         <ControlPanel
           settings={settings}

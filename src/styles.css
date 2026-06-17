@@ -188,6 +188,13 @@ button {
   min-height: 0;
 }
 
+.surface-workspace {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+}
+
 .surface-frame {
   min-width: 0;
   min-height: 0;
@@ -364,6 +371,202 @@ button {
     "SFMono-Regular", "Roboto Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
+.interface-dock {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.75fr) minmax(348px, 1.4fr) minmax(172px, 0.7fr) 100px;
+  gap: 12px;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  background: rgba(9, 14, 14, 0.97);
+  padding: 12px;
+}
+
+.command-console,
+.signal-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dock-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.command-composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid var(--line-strong);
+  background: rgba(5, 8, 8, 0.88);
+  color: var(--green);
+  padding: 0 14px;
+  font-family:
+    "SFMono-Regular", "Roboto Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  text-align: left;
+}
+
+.command-composer span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-sign {
+  color: var(--amber);
+}
+
+.workflow-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(108px, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.workflow-action {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  gap: 4px 8px;
+  min-width: 0;
+  min-height: 116px;
+  border: 1px solid var(--line);
+  background: rgba(13, 19, 19, 0.82);
+  color: var(--text);
+  padding: 10px;
+  text-align: left;
+}
+
+.workflow-action svg {
+  color: var(--cyan);
+}
+
+.workflow-action span {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.workflow-action small,
+.workflow-action code {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.workflow-action small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.workflow-action code {
+  overflow: hidden;
+  color: var(--green);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-action:hover,
+.command-composer:hover,
+.dock-primary-action:hover {
+  border-color: rgba(112, 242, 102, 0.54);
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.signal-grid div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.signal-grid div:first-child {
+  grid-column: 1 / -1;
+}
+
+.signal-grid dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.signal-grid dd {
+  margin: 0;
+  overflow: hidden;
+  color: var(--green);
+  font-family:
+    "SFMono-Regular", "Roboto Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-log {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  list-style: none;
+}
+
+.event-log li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.event-log span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dock-primary-action {
+  display: grid;
+  width: 100%;
+  min-height: 116px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border: 1px solid rgba(239, 179, 95, 0.42);
+  background: rgba(239, 179, 95, 0.1);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 1240px) and (min-width: 981px) {
+  .interface-dock {
+    grid-template-columns: minmax(190px, 0.85fr) minmax(340px, 1.3fr) 108px;
+  }
+
+  .signal-panel {
+    display: none;
+  }
+}
+
 .status-pill {
   color: var(--green);
 }
@@ -427,11 +630,34 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .surface-workspace {
+    grid-template-rows: auto auto;
+  }
+
   .surface-frame {
     height: min(62vh, 620px);
     min-height: 520px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .interface-dock {
+    grid-template-columns: 1fr;
+    border-right: 0;
+  }
+
+  .workflow-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-action,
+  .dock-primary-action {
+    min-height: 84px;
+  }
+
+  .dock-primary-action {
+    width: 100%;
+    grid-auto-flow: column;
   }
 
   .control-panel {
