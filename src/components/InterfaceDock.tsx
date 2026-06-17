@@ -40,9 +40,7 @@ const dockActions: DockAction[] = [
       perspectiveAmount: 0.82,
       perspectiveMotion: 0.78,
       perspectiveSkew: 0.58,
-      playing: true,
-      zRippleEnabled: true,
-      zScatterEnabled: true
+      playing: true
     }
   },
   {
@@ -59,9 +57,7 @@ const dockActions: DockAction[] = [
       perspectiveAmount: 0.94,
       perspectiveMotion: 0.72,
       playing: true,
-      zRippleEnabled: true,
-      zRippleAmount: 0.86,
-      zScatterEnabled: true
+      zRippleAmount: 0.86
     }
   },
   {
@@ -76,9 +72,7 @@ const dockActions: DockAction[] = [
       mix: 0.54,
       perspectiveEnabled: false,
       playing: true,
-      transitionMode: "text-to-ascii",
-      zRippleEnabled: false,
-      zScatterEnabled: false
+      transitionMode: "text-to-ascii"
     }
   }
 ];
@@ -174,15 +168,17 @@ export function InterfaceDock({
         className="dock-primary-action"
         data-testid="dock-primary-action"
         type="button"
-        onClick={() =>
+        onClick={() => {
+          const assemblyEnabled = !settings.assemblyEnabled;
+
           updateSettings({
-            assemblyEnabled: !settings.assemblyEnabled,
+            assemblyEnabled,
             perspectiveEnabled: true,
             playing: true,
-            zRippleEnabled: true,
-            zScatterEnabled: true
-          })
-        }
+            zRippleEnabled: assemblyEnabled,
+            zScatterEnabled: assemblyEnabled
+          });
+        }}
       >
         <WandSparkles size={18} />
         <span>{settings.assemblyEnabled ? "Return to page" : "Trigger leap"}</span>
