@@ -36,7 +36,6 @@ const dockActions: DockAction[] = [
       assemblyEnabled: false,
       liveSource: "diagram3d",
       mix: 0.74,
-      perspectiveEnabled: true,
       perspectiveAmount: 0.82,
       perspectiveMotion: 0.78,
       perspectiveSkew: 0.58,
@@ -53,7 +52,6 @@ const dockActions: DockAction[] = [
       assemblyEnabled: true,
       liveSource: "diagram3d",
       mix: 0.86,
-      perspectiveEnabled: true,
       perspectiveAmount: 0.94,
       perspectiveMotion: 0.72,
       playing: true,
@@ -70,7 +68,6 @@ const dockActions: DockAction[] = [
       assemblyEnabled: false,
       liveSource: "diagram",
       mix: 0.54,
-      perspectiveEnabled: false,
       playing: true,
       transitionMode: "text-to-ascii"
     }
@@ -173,7 +170,6 @@ export function InterfaceDock({
 
           updateSettings({
             assemblyEnabled,
-            perspectiveEnabled: true,
             playing: true,
             zRippleEnabled: assemblyEnabled,
             zScatterEnabled: assemblyEnabled
